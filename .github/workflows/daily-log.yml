@@ -1,0 +1,53 @@
+
+name: Daily Learning Log
+
+on:
+  schedule:
+    - cron: "0 1 * * *"   # 08.00 WIB
+    - cron: "0 6 * * *"   # 13.00 WIB
+    - cron: "0 13 * * *"  # 20.00 WIB
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-log:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create daily log
+        run: |
+          mkdir -p learning-log
+          DATE=$(date -u +%Y-%m-%d)
+          FILE="learning-log/${DATE}.md"
+
+          if [ ! -f "$FILE" ]; then
+            cat > "$FILE" <<EOF
+          # Learning Log - ${DATE}
+
+          ## Materi yang dipelajari
+          Isi materi yang benar-benar dipelajari.
+
+          ## Praktik
+          Isi latihan atau proyek yang dikerjakan.
+
+          ## Evaluasi
+          Isi hasil dan kendala yang ditemukan.
+          EOF
+          fi
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add learning-log/
+          if ! git diff --cached --quiet; then
+            git commit -m "Add daily learning log"
+            git push
+          fi
