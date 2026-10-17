@@ -42,9 +42,9 @@ jobs:
 
       - name: Commit and push
         run: |
-          git config user.name "github-actions[bot]"
+          git config user.name "rifqyhafidz"
           git config user.email \
-            "41898282+github-actions[bot]@users.noreply.github.com"
+            "rifqyhafidz28@gmail.com"
 
           git add learning-log/
           if ! git diff --cached --quiet; then
