@@ -3,9 +3,9 @@ name: Daily Learning Log
 
 on:
   schedule:
-    - cron: "0 1 * * *"   # 08.00 WIB
-    - cron: "0 6 * * *"   # 13.00 WIB
-    - cron: "0 13 * * *"  # 20.00 WIB
+    - cron: "0 1 * * *"
+    - cron: "0 6 * * *"
+    - cron: "0 13 * * *"
   workflow_dispatch:
 
 permissions:
@@ -19,35 +19,45 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create daily log
+      - name: Create scheduled log
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
         run: |
+          DATE=$(TZ=Asia/Jakarta date +%Y-%m-%d)
+
+          case "$SCHEDULE" in
+            "0 1 * * *") SLOT="08-00" ;;
+            "0 6 * * *") SLOT="13-00" ;;
+            "0 13 * * *") SLOT="20-00" ;;
+            *) SLOT=$(TZ=Asia/Jakarta date +%H-%M-%S) ;;
+          esac
+
           mkdir -p learning-log
-          DATE=$(date -u +%Y-%m-%d)
-          FILE="learning-log/${DATE}.md"
+          FILE="learning-log/${DATE}-${SLOT}.md"
 
           if [ ! -f "$FILE" ]; then
             cat > "$FILE" <<EOF
-          # Learning Log - ${DATE}
+          # Learning Log - ${DATE} ${SLOT} WIB
 
           ## Materi yang dipelajari
-          Isi materi yang benar-benar dipelajari.
+          Catat materi yang benar-benar dipelajari.
 
           ## Praktik
-          Isi latihan atau proyek yang dikerjakan.
+          Catat latihan yang benar-benar dikerjakan.
 
           ## Evaluasi
-          Isi hasil dan kendala yang ditemukan.
+          Catat hasil belajar dan kendala.
           EOF
           fi
 
       - name: Commit and push
         run: |
           git config user.name "rifqyhafidz"
-          git config user.email \
-            "rifqyhafidz28@gmail.com"
+          git config user.email "rifqyhafidz28@gmail.com"
 
           git add learning-log/
+
           if ! git diff --cached --quiet; then
-            git commit -m "Add daily learning log"
-            git push
+            git commit -m "Update learning log"
+            git push origin main
           fi
